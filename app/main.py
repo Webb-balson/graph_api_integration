@@ -3,13 +3,31 @@ FastAPI entry point for email service.
 Provides endpoints to trigger email send and manual fetch.
 """
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from graph_api import send_mail, get_recent_emails
 from utils import scheduler
 from utils.db_utils import store_emails
 
+# Initialize the rate limiter
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Graph Email Service")
+app.state.limiter = limiter
+# app.add_exception_handler(RateLimitExceeded, lambda request, exc: HTTPException(status_code=429, detail="Rate limit exceeded"))
+app.add_middleware(SlowAPIMiddleware)
+
+# Custom exception handler for RateLimitExceeded
+@app.exception_handler(RateLimitExceeded)
+def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded. Please try again later."}
+    )
 
 # Start background scheduler
 scheduler.start_scheduler()
@@ -20,7 +38,8 @@ class EmailRequest(BaseModel):
     recipient: EmailStr
 
 @app.get("/")
-def root():
+@limiter.limit("5/minute")  # Limit to 5 requests per minute per IP
+def root(request: Request):
     return {"message": "Graph Email Service is running."}
 
 @app.post("/send-email")
