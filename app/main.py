@@ -34,7 +34,7 @@ def send_email(req: EmailRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/fetch-emails")
+@app.get("/fetch-emails")
 def fetch_emails():
     """
     Manually fetch and store recent emails.
