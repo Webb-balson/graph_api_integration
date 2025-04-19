@@ -4,39 +4,99 @@ Handles MongoDB operations for storing and retrieving emails.
 
 from pymongo import MongoClient
 from configs import config
+from utils.schemas import EmailSchema
 
+# Initialize MongoDB client
 client = MongoClient(config.MONGO_URI)
 db = client[config.DB_NAME]
 collection = db[config.COLLECTION_NAME]
+
+def preprocess_email(email: dict) -> dict:
+    """
+    Pre-process raw email data from Microsoft Graph API to match the schema.
+    """
+    return {
+        "id": email["id"],
+        "subject": email.get("subject", ""),
+        "body": email.get("body", {}).get("content", ""),  # Extract the content field
+        "sender": {
+            "name": email.get("from", {}).get("emailAddress", {}).get("name", ""),
+            "email": email.get("from", {}).get("emailAddress", {}).get("address", "")
+        },
+        "toRecipients": [
+            {
+                "name": recipient.get("emailAddress", {}).get("name", ""),
+                "email": recipient.get("emailAddress", {}).get("address", "")
+            }
+            for recipient in email.get("toRecipients", [])
+        ],
+        "ccRecipients": [
+            {
+                "name": recipient.get("emailAddress", {}).get("name", ""),
+                "email": recipient.get("emailAddress", {}).get("address", "")
+            }
+            for recipient in email.get("ccRecipients", [])
+        ],
+        "receivedDateTime": email.get("receivedDateTime", ""),
+        "isRead": email.get("isRead", False),
+        "attachments": [
+            {
+                "id": attachment.get("id", ""),
+                "name": attachment.get("name", ""),
+                "contentType": attachment.get("contentType", ""),
+                "size": attachment.get("size", 0)
+            }
+            for attachment in email.get("attachments", [])
+        ]
+    }
 
 def store_emails(emails: list):
     """
     Insert emails into MongoDB if they do not already exist.
     """
     for email in emails:
-        if not collection.find_one({"id": email["id"]}):
-            collection.insert_one(email)
+        try:
+            # Pre-process the email data
+            processed_email = preprocess_email(email)
 
-def insert_record(record: dict):
-    """
-    Insert a single record into MongoDB.
-    """
-    collection.insert_one(record)
+            # Validate and parse the email using Pydantic
+            validated_email = EmailSchema(**processed_email).model_dump()  # Convert to dictionary for MongoDB
+            if not collection.find_one({"id": validated_email["id"]}):
+                collection.insert_one(validated_email)
+        except Exception as e:
+            print(f"[Error] Failed to store email: {e}")
 
+
+def fetch_email_count():
+    """
+    Fetch all emails from MongoDB.
+    """
+    return collection.count_documents({})
+
+def fetch_emails():
+    """
+    Fetch all emails from MongoDB.
+    """
+    return list(collection.find({}))
 
 if __name__ == "__main__":
     # Example usage
     emails = [
-        {"id": "1", "subject": "Test Email 1", "body": "This is a test email."},
-        {"id": "2", "subject": "Test Email 2", "body": "This is another test email."}
+        {
+            "id": "1",
+            "subject": "Test Email",
+            "body": "This is a test email.",
+            "sender": {"name": "John Doe", "email": "john.doe@example.com"},
+            "toRecipients": [{"name": "Jane Smith", "email": "jane.smith@example.com"}],
+            "ccRecipients": [],
+            "receivedDateTime": "2025-04-19T10:30:00Z",
+            "isRead": False,
+            "attachments": []
+        }
     ]
-    # store_emails(emails)
-    # Insert a single record
-    record = {"id": "3", "subject": "Test Email 3", "body": "This is a third test email."}
-    insert_record(record)
-    # Check if the record was inserted     
-    inserted_record = collection.find_one({"id": "3"})
-    if inserted_record:
-        print(f"Inserted record: {inserted_record}")
-    else:
-        print("Record not found.")
+
+    # Fetch all emails
+    emails = fetch_emails()
+    num_emails = len(emails)
+    print(f"Fetched {num_emails} emails from the database.")
+    print(f"Total emails in the database: {emails}")
