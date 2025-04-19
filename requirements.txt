@@ -11,3 +11,4 @@ mongomock==4.3.0
 slowapi==0.1.9
 httpx==0.28.1
 motor==3.7.0
+pytest-asyncio==0.26.0

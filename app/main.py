@@ -11,7 +11,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from graph_api import send_mail, get_recent_emails
+from app.graph_api import send_mail, get_recent_emails
 from utils import scheduler
 from utils.db_utils import store_emails
 
