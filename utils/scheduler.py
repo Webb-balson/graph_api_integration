@@ -2,26 +2,30 @@
 Background scheduler that fetches and stores new emails periodically.
 """
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.graph_api import get_recent_emails
 from utils.db_utils import store_emails
+import asyncio
 
-def fetch_and_store():
+async def fetch_and_store():
     """
     Fetch recent emails and store them in MongoDB.
     """
     try:
-        emails = get_recent_emails()
-        store_emails(emails)
+        emails = await get_recent_emails()
+        await store_emails(emails)
         print(f"[Scheduler] Fetched and stored {len(emails)} emails.")
     except Exception as e:
         print(f"[Scheduler Error] {e}")
 
+# Initialize the scheduler
+scheduler = AsyncIOScheduler()
+
 def start_scheduler():
     """
-    Start background scheduler to run every hour.
+    Start the background scheduler.
     """
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(fetch_and_store, "interval", hours=1)
+    # Add a job to fetch and store emails every hour
+    scheduler.add_job(lambda: asyncio.create_task(fetch_and_store()), "interval", hours=1)
     scheduler.start()
     print("[Scheduler] Started.")
