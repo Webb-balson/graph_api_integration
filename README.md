@@ -82,3 +82,46 @@ In this project, I utilized AI coding tools like ChatGPT and GitHub Copilot to s
 These tools significantly reduced development time and allowed me to focus on implementing core features effectively.
 
 P.S - I used Github Copilot to generate the complete README file :)
+
+
+## Improvements and Feature Enhancements
+
+#### Handle Attachments
+- Add functionality to handle email attachments, allowing users to upload and download files as part of email communication.
+- Ensure secure storage and retrieval of attachments, with support for common file types.
+
+#### Health Check API
+- Implement a **GET /health** endpoint to provide a quick status check of the service, including database connectivity and API readiness.
+
+#### Live Check API
+- Add a **GET /live** endpoint to verify the application's live status, ensuring the service is running and accessible.
+- Include uptime metrics and basic system health information in the response.
+
+### Notifications and Alerts
+- Add notifications/alerts for events such as email sent successfully or rate limit exceeded.
+
+### Token Persistence
+- Persist the authentication token in a secure persistent storage or cloud service to avoid re-authentication after server restarts, especially when using device flow authentication.
+
+### Client Credential Flow for Userless Authentication
+
+To enable userless authentication, the application can utilize the Client Credential Flow provided by Microsoft Identity Platform. This flow is suitable for server-to-server communication where no user interaction is required.
+
+### Security Enhancements
+- Implement authentication and authorization for API endpoints using OAuth with JWT.
+- Integrate with the Microsoft Identity platform for secure user authentication and role-based access control.
+
+### Database Improvements
+- Add indexes to improve query performance.
+- Use transactions for critical operations to ensure data consistency.
+- Implement pagination for endpoints that return large datasets to enhance performance and usability.
+
+### Scalability Improvements
+- Add Docker support to containerize the application for easier deployment and distribution.
+- Deploy the application to the cloud to make it accessible to a wider audience.
+- Implement monitoring and logging to track application performance and identify issues proactively.
+
+### Testing and Quality Assurance
+- Add unit tests and integration tests to ensure the reliability of the application.
+- Generate test coverage reports to identify untested parts of the codebase.
+
