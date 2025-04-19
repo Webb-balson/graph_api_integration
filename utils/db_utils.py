@@ -5,11 +5,14 @@ Handles MongoDB operations for storing and retrieving emails.
 from pymongo import MongoClient
 from configs import config
 from utils.schemas import EmailSchema
+import json
 
 # Initialize MongoDB client
 client = MongoClient(config.MONGO_URI)
 db = client[config.DB_NAME]
 collection = db[config.COLLECTION_NAME]
+users_collection = db["users_coll"]
+contacts_collection = db["contacts_coll"]
 
 def preprocess_email(email: dict) -> dict:
     """
@@ -63,8 +66,13 @@ def store_emails(emails: list):
             validated_email = EmailSchema(**processed_email).model_dump()  # Convert to dictionary for MongoDB
             if not collection.find_one({"id": validated_email["id"]}):
                 collection.insert_one(validated_email)
+
         except Exception as e:
             print(f"[Error] Failed to store email: {e}")
+
+        # Write the retrived email to a file
+        with open("my_email_json.json", "w") as f:
+            json.dump(emails, f, indent=4)
 
 
 def fetch_email_count():
@@ -96,7 +104,12 @@ if __name__ == "__main__":
     ]
 
     # Fetch all emails
-    emails = fetch_emails()
-    num_emails = len(emails)
-    print(f"Fetched {num_emails} emails from the database.")
-    print(f"Total emails in the database: {emails}")
+    # emails = fetch_emails()
+    # num_emails = len(emails)
+    # print(f"Fetched {num_emails} emails from the database.")
+    # print(f"Total emails in the database: {emails}")
+
+    # List my user contacts
+    contacts = list(users_collection.find({}))
+    print(f"Fetched {len(contacts)} contacts from the database.")
+    print(contacts)
