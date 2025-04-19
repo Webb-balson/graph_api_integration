@@ -84,16 +84,17 @@ These tools significantly reduced development time and allowed me to focus on im
 P.S - I used Github Copilot to generate the complete README file :)
 
 
-## Improvements and Feature Enhancements
 
-#### Handle Attachments
+# Improvements and Feature Enhancements
+
+### Handle Attachments
 - Add functionality to handle email attachments, allowing users to upload and download files as part of email communication.
 - Ensure secure storage and retrieval of attachments, with support for common file types.
 
-#### Health Check API
+### Health Check API
 - Implement a **GET /health** endpoint to provide a quick status check of the service, including database connectivity and API readiness.
 
-#### Live Check API
+### Live Check API
 - Add a **GET /live** endpoint to verify the application's live status, ensuring the service is running and accessible.
 - Include uptime metrics and basic system health information in the response.
 
@@ -104,7 +105,6 @@ P.S - I used Github Copilot to generate the complete README file :)
 - Persist the authentication token in a secure persistent storage or cloud service to avoid re-authentication after server restarts, especially when using device flow authentication.
 
 ### Client Credential Flow for Userless Authentication
-
 To enable userless authentication, the application can utilize the Client Credential Flow provided by Microsoft Identity Platform. This flow is suitable for server-to-server communication where no user interaction is required.
 
 ### Security Enhancements
