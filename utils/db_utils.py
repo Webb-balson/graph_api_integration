@@ -10,6 +10,8 @@ from utils.schemas import EmailSchema
 client = AsyncIOMotorClient(config.MONGO_URI)
 db = client[config.DB_NAME]
 collection = db[config.COLLECTION_NAME]
+users_collection = db["users_coll"]
+contacts_collection = db["contacts_coll"]
 
 async def preprocess_email(email: dict) -> dict:
     """
